@@ -309,7 +309,16 @@ public:
 
         result = requestResponse(request);
         if (result != WIFI_SUCCESS) {
-            ALOGE("Failed to register debug response; result = %d", result);
+            /* -EOPNOTSUPP (-95) is permanent on this driver: the SCSC firmware does
+             * not implement the vendor debug/logger command, and the caller retries
+             * the start anyway, so this printed one error line per retry on every
+             * boot (device_samsung_a30s#8 bug 6 measured 49x, #14 measured 287x, and
+             * the report attributes ~3 min of logd CPU in 5.5 h to this class of
+             * spam). The outcome is expected, not exceptional, so it belongs at
+             * verbose -- ALOGV is compiled out unless LOG_NDEBUG is 0, which also
+             * removes the per-retry formatting cost. Nothing about the returned
+             * result changes. */
+            ALOGV("Failed to register debug response; result = %d", result);
         }
         return result;
     }
